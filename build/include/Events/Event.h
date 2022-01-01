@@ -1,6 +1,6 @@
 #pragma once
 
-#include "sppch.h"
+#include "zxpch.h"
 
 enum class EventType
 {
@@ -13,10 +13,8 @@ enum class EventType
 	MouseWheelScrolled, 
 
 	WindowResized,
+	WindowMoved,
 	WindowClosed,
-
-	AppTick,
-	AppRender,
 
 	FilesDropped
 };

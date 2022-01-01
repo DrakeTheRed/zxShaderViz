@@ -2,11 +2,6 @@
 
 #include <glm/glm.hpp>
 
-// Supported Shader Types Count
-static const unsigned int s_ShaderTypesCount = 2;
-
-static const char* s_VertexShaderDefault = "";
-
 enum class ShaderType : int
 {
 	Vertex = 0,
@@ -15,11 +10,38 @@ enum class ShaderType : int
 	Error = -1
 };
 
+enum class ShaderFileType : int
+{
+	GLSL = 0,
+	zxs = 1,
+	frag = 2,
+
+	Error = -1
+};
+
+enum class ShaderStatus : int
+{
+	Linked = 0,
+	Parsed = 1,
+	Error = 2
+};
+
+static ShaderFileType GetTypeFromExtension(const std::string& ext)
+{
+	if (ext == ".glsl")
+		return ShaderFileType::GLSL;
+	else if (ext == ".zxs")
+		return ShaderFileType::zxs;
+	else if (ext == ".frag" || ext == ".fragment")
+		return ShaderFileType::frag;
+	else
+		return ShaderFileType::Error;
+}
+
 class Shader
 {
 public:
-	Shader(const std::string& glslpath);
-	std::string operator[] (unsigned int index) const;
+	Shader(const std::string& filepath, ShaderFileType type);
 	operator unsigned int() const;
 
 	void SetUniform(const std::string& uniformName, float v0);
@@ -41,20 +63,23 @@ public:
 	void Enable() const;
 	void Disable() const;
 
-	bool IsLinked() const { return mLinked; }
+	bool IsLinked() const { return m_Status == ShaderStatus::Linked; }
+	ShaderStatus GetStatus() const { return m_Status; }
 
-	struct ShaderSources
-	{
-		std::string vertexSource;
-		std::string fragmentSource;
-	};
+	std::string GetFilepath() const { return m_Path; }
+	std::string GetFragmentSource() const { return m_Source; }
 
 private:
 	bool CreateShader();
 	unsigned int CompileShader(unsigned int type, const char* src);
-	bool ParseShaders(const std::string& glslpath);
 
-	ShaderSources mSources;
-	unsigned int mProgram;
-	bool mLinked;
+	bool ParseFragmentShader(const std::string& filepath);
+
+	std::string m_Path;
+	std::string m_Source;
+
+	unsigned int m_Program;
+
+	ShaderFileType m_Type;
+	ShaderStatus m_Status;
 };

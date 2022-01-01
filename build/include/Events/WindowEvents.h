@@ -29,6 +29,33 @@ private:
 	unsigned int mHeight;
 };
 
+class WindowMoved : public Event
+{
+public:
+	WindowMoved(unsigned int posx, unsigned int posy) : mPosx(posx), mPosy(posy) {}
+
+	virtual EventType	GetEventType()		const override { return EventType::WindowMoved; }
+	virtual const char* GetEventName()		const override { return "WindowMoved"; }
+	virtual std::string GetEventNameStr()   const override { return "WindowMoved"; }
+	virtual std::string GetEventInfo()		const override
+	{
+		std::stringstream ss;
+		ss << "WindowMoved: [x(" << mPosx << ") | y(" << mPosy << ")]";
+		return ss.str();
+	}
+
+	unsigned int GetPosX() const { return mPosx; }
+	unsigned int GetPosY() const { return mPosy; }
+
+	static EventType GetEventStaticType() { return EventType::WindowMoved; }
+
+	virtual bool IsHandled() const override { return mHandled; }
+
+private:
+	unsigned int mPosx;
+	unsigned int mPosy;
+};
+
 class WindowClosed : public Event 
 { 
 public:
@@ -38,32 +65,6 @@ public:
 	virtual std::string GetEventInfo()		const override { return "WindowClosed [No info]"; }
 
 	static EventType GetEventStaticType() { return EventType::WindowClosed; }
-
-	virtual bool IsHandled() const override { return mHandled; }
-};
-
-class AppTick : public Event 
-{ 
-public:
-	virtual EventType	GetEventType()		const override { return EventType::AppTick; }
-	virtual const char* GetEventName()		const override { return "AppTick"; }
-	virtual std::string GetEventNameStr()   const override { return "AppTick"; }
-	virtual std::string GetEventInfo()		const override { return "AppTick [No info]"; }
-
-	static EventType GetEventStaticType() { return EventType::AppTick; }
-
-	virtual bool IsHandled() const override { return mHandled; }
-};
-
-class AppRender : public Event 
-{
-public:
-	virtual EventType	GetEventType()		const override { return EventType::AppRender; }
-	virtual const char* GetEventName()		const override { return "AppRender"; }
-	virtual std::string GetEventNameStr()   const override { return "AppRender"; }
-	virtual std::string GetEventInfo()		const override { return "AppRender [No info]"; }
-
-	static EventType GetEventStaticType() { return EventType::AppRender; }
 
 	virtual bool IsHandled() const override { return mHandled; }
 };
@@ -89,11 +90,12 @@ public:
 		return ss.str();
 	}
 
-	static EventType GetEventStaticType() { return EventType::FilesDropped; }
-
-	virtual bool IsHandled() const override { return mHandled; }
-
+	size_t GetCount() const { return mFiles.size(); }
 	std::vector<std::string> GetFiles() const { return mFiles; }
+	
+	static EventType GetEventStaticType() { return EventType::FilesDropped; }
+	
+	virtual bool IsHandled() const override { return mHandled; }
 
 private:
 	std::vector<std::string> mFiles;

@@ -1,6 +1,7 @@
 #pragma once
 
-#include <Utils/Shader.h>
+#include "Utils/Shader.h"
+#include "FrameBuffer.h"
 
 class Renderer
 {
@@ -12,12 +13,16 @@ public:
 
 	void Draw();
 	
-	std::shared_ptr<Shader> LoadShaderFromGLSLPath(const std::string& glslpath);
-	const std::shared_ptr<Shader>& GetShader() const { return mActiveShader; }
+	std::shared_ptr<Shader> LoadShaderFromFile(const std::string& glslpath, bool recache = false);
 
-	void DeleteShaderCache() { mShaderCache.clear(); mActiveShader = nullptr; }
+	const std::shared_ptr<FrameBuffer>& GetFrameBuffer() const { return m_FrameBuffer; }
+	const std::shared_ptr<Shader>& GetShader() const { return m_ActiveShader; }
 
-	std::unordered_map<std::string, std::shared_ptr<Shader>> GetRawShaderCache() const { return mShaderCache; }
+	void SetShader(const std::shared_ptr<Shader>& shader) { m_ActiveShader = shader; }
+
+	void DeleteShaderCache() { m_ShaderCache.clear(); m_ActiveShader = nullptr; m_FrameBuffer->DeleteColorAttachment(); m_FrameBuffer->Invalidate(); }
+
+	std::unordered_map<std::string, std::shared_ptr<Shader>> GetRawShaderCache() const { return m_ShaderCache; }
 
 private: 
 
@@ -25,10 +30,13 @@ private:
 
 	static std::shared_ptr<Renderer> s_Instance;
 
-	uint32_t mVao_id;
-	uint32_t mVbo_id;
-	uint32_t mIbo_id;
+	unsigned int m_Vao_id;
+	unsigned int m_Vbo_id;
+	unsigned int m_Ibo_id;
 
-	std::unordered_map<std::string, std::shared_ptr<Shader>> mShaderCache;
-	std::shared_ptr<Shader> mActiveShader;
+	std::unordered_map<std::string, std::shared_ptr<Shader>> m_ShaderCache;
+	std::shared_ptr<Shader> m_ActiveShader;
+	std::shared_ptr<FrameBuffer> m_FrameBuffer;
+	
+	friend class Application;
 };

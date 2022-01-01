@@ -1,51 +1,68 @@
-workspace "ShaderPlayground"
+workspace "zxShaderViz"
   architecture "x64"
-  configurations { "Debug", "Release", "Distribution" }
+  configurations { "Debug", "Release" }
+  startproject "zxShaderViz"
 
   outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
     
-  ExternalDirectories = {}
-  ExternalDirectories["Glad"]  = "build/ThirdParty/Glad/include"
-  ExternalDirectories["GLFW"]  = "build/ThirdParty/GLFW/include"
-  ExternalDirectories["ImGui"] = "build/ThirdParty/ImGui"
+  ExtLibs = {}
+  ExtLibs["Glad"]  = "build/ThirdParty/Glad/include"
+  ExtLibs["GLFW"]  = "build/ThirdParty/GLFW/include"
+  ExtLibs["Yaml"]  = "build/ThirdParty/YAML/include"
+  ExtLibs["ImGui"] = "build/ThirdParty/ImGui"
 
+  IncludeDirectories = {}
+  IncludeDirectories["glm"] = "build/ThirdParty/glm"
+  
   include "build/ThirdParty/Glad"
   include "build/ThirdParty/GLFW"
   include "build/ThirdParty/ImGui"
-
-project "ShaderPlayground"
-  location "build"
-  kind "ConsoleApp"
-  language "C++"
-
-  targetdir ( "bin/".. outputdir .. "/%{prj.name}" )
-  objdir    ( "bin/intermediates/" .. outputdir .. "/%{prj.name}" )
-
-  files { "build/src/**.cpp", "build/include/**.h", "build/ThirdParty/glm/glm/**.hpp" }
-  includedirs { "build/src", "build/include",  "build/ThirdParty/glm", "%{ExternalDirectories.Glad}", "%{ExternalDirectories.GLFW}", "%{ExternalDirectories.ImGui}" }
-  links { "Glad", "GLFW", "ImGui", "opengl32.lib" }
-
-  pchheader "sppch.h"
-  pchsource "build/src/sppch.cpp"
-
-  filter "system:windows" 
+  include "build/ThirdParty/YAML"
+  
+  project "zxShaderViz"
+    location "build"
+    language "C++"
     cppdialect "C++17"
-    staticruntime "On"
-    systemversion "latest"
-    system "windows"
 
-    defines { "SP_WIN" }
+    targetdir ( "bin/".. outputdir .. "/%{prj.name}" )
+    objdir    ( "bin/intermediates/" .. outputdir .. "/%{prj.name}" )
 
-  filter { "configurations:Debug" }
-    defines { "SP_DEBUG", "DEBUG" }
-    symbols "On"
+    files
+    { 
+      "build/src/**.cpp", 
+      "build/include/**.h",
+      "%{IncludeDirectories.glm}/glm/**.hpp",
+    }
 
-  filter { "configurations:Release" }
-    defines { "SP_RELEASE", "NDEBUG" }
-    optimize "On"
-    linkoptions { "/SUBSYSTEM:WINDOWS" }
+    includedirs 
+    {
+      "build/src", 
+      "build/include",
+      "%{IncludeDirectories.glm}",
+      "%{ExtLibs.Glad}", 
+      "%{ExtLibs.GLFW}", 
+      "%{ExtLibs.ImGui}",
+      "%{ExtLibs.Yaml}"
+    }
 
-  filter { "configurations:Distribution" }
-    defines { "SP_DIST", "SP_HIDE_LOGS" }
-    optimize "On"
-    linkoptions { "/SUBSYSTEM:WINDOWS" }
+    links { "Glad", "GLFW", "ImGui", "Yaml-cpp", "opengl32.lib" }
+
+    pchheader "zxpch.h"
+    pchsource "build/src/zxpch.cpp"
+
+    filter "system:windows" 
+      staticruntime "On"
+      systemversion "latest"
+      system "windows"
+
+      defines { "ZX_WIN" }
+
+    filter { "configurations:Debug" }
+      defines { "DEBUG" }
+      symbols "On"
+      kind "ConsoleApp"
+
+    filter { "configurations:Release" }
+      defines { "ZX_RELEASE", "NDEBUG" }
+      optimize "On"
+      kind "WindowedApp"

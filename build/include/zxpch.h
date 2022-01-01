@@ -11,8 +11,9 @@
 #include <iostream>
 #include <algorithm>
 #include <functional>
+#include <filesystem>
 #include <unordered_map>
 
-#ifdef SP_WIN
+#ifdef ZX_WIN
 	#include <Windows.h>
 #endif
